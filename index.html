@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Álgebra Lineal en Procesamiento de Imágenes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --gray: #7f8c8d;
+            --success: #27ae60;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header-graphic {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        nav {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            padding: 1rem 0;
+        }
+
+        nav li {
+            margin: 0 1.5rem;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 0.5rem 0;
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--secondary);
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background-color: var(--secondary);
+            transition: width 0.3s;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        .section {
+            padding: 4rem 0;
+            border-bottom: 1px solid #e1e1e1;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--primary);
+            position: relative;
+        }
+
+        .section-title h2 {
+            font-size: 2.2rem;
+            display: inline-block;
+            padding-bottom: 0.5rem;
+        }
+
+        .section-title h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background-color: var(--secondary);
+        }
+
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+        }
+
+        .text-content {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .visual-content {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .matrix {
+            font-size: 1.2rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .matrix table {
+            margin: 0 auto;
+            border-collapse: collapse;
+        }
+
+        .matrix td {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            border: 1px solid #ddd;
+            padding: 10px;
+            font-weight: bold;
+        }
+
+        .kernel-table {
+            background-color: #e8f4fc;
+        }
+
+        .pixel-table {
+            background-color: #f9f9f9;
+        }
+
+        .result-table {
+            background-color: #e8f8f0;
+        }
+
+        .highlight {
+            background-color: rgba(52, 152, 219, 0.2);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .formula {
+            font-size: 1.3rem;
+            text-align: center;
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .interactive-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin: 1.5rem 0;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .control-label {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        input[type="range"] {
+            width: 200px;
+        }
+
+        .value-display {
+            min-width: 40px;
+            text-align: center;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+
+        button {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: background-color 0.3s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .button-accent {
+            background-color: var(--accent);
+        }
+
+        .button-accent:hover {
+            background-color: #c0392b;
+        }
+
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            margin: 1rem auto;
+            max-width: 200px;
+        }
+
+        .matrix-cell {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .eigen-cell {
+            background-color: #e8f4fc;
+        }
+
+        .eigenvalue-display {
+            font-size: 1.5rem;
+            text-align: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            background-color: #f0f7ff;
+            border-radius: 8px;
+        }
+
+        .image-demo {
+            width: 100%;
+            margin-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .image-container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1rem 0;
+            width: 100%;
+        }
+
+        .image-box {
+            flex: 1;
+            min-width: 250px;
+            text-align: center;
+        }
+
+        .image-box img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-label {
+            margin-top: 0.5rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .canvas-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 1rem auto;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .explanation-box {
+            background-color: #f9f9f9;
+            border-left: 4px solid var(--success);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .steps {
+            margin: 2rem 0;
+        }
+
+        .step {
+            display: flex;
+            margin-bottom: 1.5rem;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            background-color: var(--secondary);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        footer {
+            background-color: var(--primary);
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 2rem;
+        }
+
+        footer p {
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        .footer-links a:hover {
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            nav li {
+                margin: 0.5rem 0;
+            }
+            
+            .content {
+                flex-direction: column;
+            }
+            
+            .section-title h2 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Álgebra Lineal en Procesamiento de Imágenes</h1>
+            <p>Filtro de promedio, diagonalización de matrices y su aplicación en kernels de convolución</p>
+        </div>
+        <div class="header-graphic" id="matrix-animation"></div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="#intro">Introducción</a></li>
+                <li><a href="#kernel">Kernel de Promedio</a></li>
+                <li><a href="#diagonalization">Diagonalización</a></li>
+                <li><a href="#application">Aplicación Práctica</a></li>
+                <li><a href="#conclusion">Conclusión</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section id="intro" class="section">
+            <div class="section-title">
+                <h2>Introducción</h2>
+            </div>
+            <div class="content">
+                <div class="text-content">
+                    <p>En procesamiento de imágenes, un <span class="highlight">kernel</span> o máscara de convolución es una matriz pequeña que se utiliza para aplicar efectos como desenfoque, detección de bordes, realce, etc.</p>
+                    <p>El kernel se desplaza sobre cada píxel de la imagen y realiza operaciones matemáticas con los píxeles vecinos para calcular un nuevo valor.</p>
+                    <div class="explanation-box">
+                        <p>En este seminario trabajaremos con un kernel de promedio 3×3, que produce un efecto de desenfoque (<em>blur</em>) al reemplazar cada píxel por el promedio de sus vecinos.</p>
+                    </div>
+                    <p>La diagonalización de matrices permite simplificar el cálculo de potencias de kernels, haciendo más eficiente la aplicación repetida del filtro.</p>
+                </div>
+                <div class="visual-content">
+                    <h3>Representación Visual de un Kernel</h3>
+                    <div class="canvas-container">
+                        <div id="kernel-visualization"></div>
+                    </div>
+                    <p>Un kernel 3×3 aplicado a una imagen. La región roja representa el kernel recorriendo los píxeles.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="kernel" class="section">
+            <div class="section-title">
+                <h2>Kernel de Promedio</h2>
+            </div>
+            <div class="content">
+                <div class="text-content">
+                    <p>El kernel de promedio 3×3 está definido como:</p>
+                    <div class="formula">
+                        $$K = \frac{1}{9} \begin{bmatrix} 1 & 1 & 1 \\ 1 & 1 & 1 \\ 1 & 1 & 1 \end{bmatrix}$$
+                    </div>
+                    <p>Cada elemento de la matriz original se multiplica por 1/9, lo que equivale a calcular el promedio de los 9 píxeles en la vecindad 3×3.</p>
+                    
+                    <div class="steps">
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>Matriz de píxeles original</h4>
+                                <div class="matrix">
+                                    <table class="pixel-table">
+                                        <tr>
+                                            <td>2</td><td>4</td><td>5</td>
+                                        </tr>
+                                        <tr>
+                                            <td>6</td><td>1</td><td>2</td>
+                                        </tr>
+                                        <tr>
+                                            <td>4</td><td>5</td><td>1</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>Aplicación del kernel</h4>
+                                <p>Sumamos todos los valores y dividimos entre 9:</p>
+                                <div class="formula">
+                                    $$\frac{2+4+5+6+1+2+4+5+1}{9} = \frac{30}{9} \approx 3.33$$
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>Matriz resultante</h4>
+                                <div class="matrix">
+                                    <table class="result-table">
+                                        <tr>
+                                            <td>2</td><td>4</td><td>5</td>
+                                        </tr>
+                                        <tr>
+                                            <td>6</td><td style="background-color: #d4edda;">3.33</td><td>2</td>
+                                        </tr>
+                                        <tr>
+                                            <td>4</td><td>5</td><td>1</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <p>El píxel central se ha reemplazado por el promedio de todos los píxeles.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="visual-content">
+                    <h3>Simulador de Kernel</h3>
+                    <p>Modifica los valores de la matriz de píxeles y observa cómo cambia el resultado:</p>
+                    
+                    <div class="matrix-grid" id="pixel-grid">
+                        <!-- Los valores se generarán con JavaScript -->
+                    </div>
+                    
+                    <div class="interactive-controls">
+                        <button id="randomize-pixels">
+                            <i class="fas fa-random"></i> Aleatorizar
+                        </button>
+                        <button id="reset-pixels">
+                            <i class="fas fa-redo"></i> Reiniciar
+                        </button>
+                    </div>
+                    
+                    <div class="result-display">
+                        <h4>Resultado del promedio:</h4>
+                        <div class="eigenvalue-display" id="average-result">3.33</div>
+                        <p>Nuevo valor para el píxel central</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="diagonalization" class="section">
+            <div class="section-title">
+                <h2>Diagonalización del Kernel</h2>
+            </div>
+            <div class="content">
+                <div class="text-content">
+                    <p>Diagonalizar una matriz \(A\) significa expresarla como \(A = PDP^{-1}\), donde \(D\) es una matriz diagonal con los autovalores y \(P\) contiene los autovectores.</p>
+                    
+                    <div class="explanation-box">
+                        <p>Para el kernel de promedio 3×3, solo hay un autovalor no nulo porque la matriz tiene rango 1. La traza (suma de la diagonal) es igual a la suma de autovalores:</p>
+                        <div class="formula">
+                            $$\text{Traza} = \frac{1}{9} + \frac{1}{9} + \frac{1}{9} = \frac{1}{3} = \lambda_1$$
+                        </div>
+                        <p>Los otros dos autovalores son cero: \(\lambda_2 = \lambda_3 = 0\).</p>
+                    </div>
+                    
+                    <h3>Autovector principal</h3>
+                    <p>El autovector asociado a \(\lambda_1 = \frac{1}{3}\) es \([1, 1, 1]^T\), porque el kernel trata por igual a todos los píxeles.</p>
+                    
+                    <div class="matrix-grid" style="max-width: 150px; margin: 1rem auto;">
+                        <div class="matrix-cell eigen-cell">1</div>
+                        <div class="matrix-cell eigen-cell">1</div>
+                        <div class="matrix-cell eigen-cell">1</div>
+                    </div>
+                    
+                    <h3>Cálculo de \(K^5\) mediante diagonalización</h3>
+                    <p>Si \(K = PDP^{-1}\), entonces \(K^n = PD^nP^{-1}\). Para \(n=5\):</p>
+                    <div class="formula">
+                        $$D^5 = \begin{bmatrix} (1/3)^5 & 0 & 0 \\ 0 & 0 & 0 \\ 0 & 0 & 0 \end{bmatrix} = \begin{bmatrix} 1/243 & 0 & 0 \\ 0 & 0 & 0 \\ 0 & 0 & 0 \end{bmatrix}$$
+                    </div>
+                    <p>Y por lo tanto, \(K^5 = P D^5 P^{-1}\).</p>
+                </div>
+                
+                <div class="visual-content">
+                    <h3>Autovalores y Autovectores</h3>
+                    <div class="eigenvalue-display">
+                        <div>Autovalores: \(\lambda_1 = \frac{1}{3}\), \(\lambda_2 = 0\), \(\lambda_3 = 0\)</div>
+                    </div>
+                    
+                    <div style="margin: 1.5rem 0;">
+                        <h4>Autovector principal:</h4>
+                        <div class="matrix">
+                            <table>
+                                <tr>
+                                    <td class="eigen-cell">1</td>
+                                </tr>
+                                <tr>
+                                    <td class="eigen-cell">1</td>
+                                </tr>
+                                <tr>
+                                    <td class="eigen-cell">1</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <h3>Calculadora de \(K^n\)</h3>
+                    <div class="interactive-controls">
+                        <div class="control-group">
+                            <label class="control-label">Exponente (n):</label>
+                            <div class="slider-container">
+                                <input type="range" id="exponent-slider" min="1" max="10" value="5" step="1">
+                                <span class="value-display" id="exponent-value">5</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-display">
+                        <h4>Resultado de \(K^n\):</h4>
+                        <div class="formula" id="k-power-result">
+                            $$K^5 = \frac{1}{243} \begin{bmatrix} 1 & 1 & 1 \\ 1 & 1 & 1 \\ 1 & 1 & 1 \end{bmatrix}$$
+                        </div>
+                        <p>Todas las entradas son iguales, lo que refuerza el efecto de suavizado.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="application" class="section">
+            <div class="section-title">
+                <h2>Aplicación Práctica</h2>
+            </div>
+            <div class="content">
+                <div class="text-content">
+                    <h3>¿Por qué diagonalizar?</h3>
+                    <p>La diagonalización hace que el cálculo de \(K^n\) sea mucho más eficiente:</p>
+                    <ul style="margin-left: 1.5rem; margin-top: 1rem;">
+                        <li>Calcular \(D^n\) es trivial (solo elevar los elementos diagonales)</li>
+                        <li>Evita multiplicaciones matriciales repetidas</li>
+                        <li>Proporciona insight sobre cómo funciona el filtro</li>
+                    </ul>
+                    
+                    <div class="explanation-box">
+                        <p>El resultado de \(K^5\) tiene sentido para un filtro de promedio: aplicar el filtro varias veces seguidas refuerza el efecto de suavizado, haciendo que la imagen sea más uniforme.</p>
+                    </div>
+                    
+                    <h3>Interpretación geométrica</h3>
+                    <p>Los autovectores con autovalor cero representan patrones que el filtro elimina (diferencias entre píxeles), mientras que el autovector \([1,1,1]^T\) con autovalor \(1/3\) representa la intensidad promedio que se preserva.</p>
+                    
+                    <div style="margin-top: 2rem;">
+                        <button id="show-calculation">
+                            <i class="fas fa-calculator"></i> Ver cálculo paso a paso
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="visual-content">
+                    <h3>Efecto del Filtro en una Imagen</h3>
+                    <div class="image-demo">
+                        <div class="image-container">
+                            <div class="image-box">
+                                <div class="canvas-container">
+                                    <canvas id="original-canvas" width="300" height="200"></canvas>
+                                </div>
+                                <div class="image-label">Imagen Original</div>
+                            </div>
+                            
+                            <div class="image-box">
+                                <div class="canvas-container">
+                                    <canvas id="blurred-canvas" width="300" height="200"></canvas>
+                                </div>
+                                <div class="image-label">Con Filtro (n=5)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="interactive-controls">
+                            <div class="control-group">
+                                <label class="control-label">Intensidad de blur:</label>
+                                <div class="slider-container">
+                                    <input type="range" id="blur-slider" min="1" max="10" value="5" step="1">
+                                    <span class="value-display" id="blur-value">5</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button id="apply-blur" class="button-accent">
+                            <i class="fas fa-magic"></i> Aplicar Filtro
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="conclusion" class="section">
+            <div class="section-title">
+                <h2>Conclusión</h2>
+            </div>
+            <div class="content">
+                <div class="text-content">
+                    <p>La diagonalización de matrices no es solo un concepto teórico de álgebra lineal, sino una herramienta práctica en procesamiento de imágenes:</p>
+                    
+                    <div class="steps">
+                        <div class="step">
+                            <div class="step-number"><i class="fas fa-bolt"></i></div>
+                            <div class="step-content">
+                                <h4>Eficiencia computacional</h4>
+                                <p>Calcular \(K^n\) mediante diagonalización es mucho más rápido que multiplicar la matriz por sí misma \(n\) veces.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number"><i class="fas fa-eye"></i></div>
+                            <div class="step-content">
+                                <h4>Interpretación visual</h4>
+                                <p>Los autovectores muestran qué patrones se preservan y cuáles se eliminan al aplicar el filtro.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number"><i class="fas fa-cogs"></i></div>
+                            <div class="step-content">
+                                <h4>Aplicaciones prácticas</h4>
+                                <p>Este enfoque se extiende a otros filtros lineales utilizados en visión por computadora, procesamiento de señales y gráficos por computadora.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="explanation-box">
+                        <p>El kernel de promedio es solo un ejemplo simple; conceptos similares se aplican a filtros más complejos como el de Sobel (detección de bordes) o el de Gauss (desenfoque gaussiano).</p>
+                    </div>
+                </div>
+                
+                <div class="visual-content">
+                    <h3>Resumen Matemático</h3>
+                    <div class="formula">
+                        $$K = \frac{1}{9} \begin{bmatrix} 1 & 1 & 1 \\ 1 & 1 & 1 \\ 1 & 1 & 1 \end{bmatrix} = P \begin{bmatrix} 1/3 & 0 & 0 \\ 0 & 0 & 0 \\ 0 & 0 & 0 \end{bmatrix} P^{-1}$$
+                    </div>
+                    
+                    <div style="margin-top: 2rem; text-align: center;">
+                        <h4>Este seminario demuestra que:</h4>
+                        <p style="font-size: 1.2rem; color: var(--primary); font-weight: 600;">
+                            El álgebra lineal es fundamental para entender y optimizar algoritmos de procesamiento de imágenes.
+                        </p>
+                    </div>
+                    
+                    <div style="margin-top: 2rem; padding: 1rem; background-color: #f0f7ff; border-radius: 8px;">
+                        <h4>Para explorar más:</h4>
+                        <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                            <li>Filtro gaussiano y sus autofunciones</li>
+                            <li>Transformada de Fourier en procesamiento de imágenes</li>
+                            <li>Aplicaciones en aprendizaje automático y visión por computadora</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Seminario de Álgebra Lineal - Procesamiento de Imágenes con Kernels</p>
+            <p>Demostración interactiva del filtro de promedio y diagonalización de matrices</p>
+            <div class="footer-links">
+                <a href="#intro"><i class="fas fa-arrow-up"></i> Volver al inicio</a>
+                <a href="https://github.com" target="_blank"><i class="fab fa-github"></i> Código fuente</a>
+                <a href="#"><i class="fas fa-file-pdf"></i> Descargar PDF</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Inicializar MathJax
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            }
+        };
+
+        // Datos iniciales
+        let pixelValues = [2, 4, 5, 6, 1, 2, 4, 5, 1];
+        let exponent = 5;
+        let blurIntensity = 5;
+        
+        // Inicializar cuando el DOM esté cargado
+        document.addEventListener('DOMContentLoaded', function() {
+            initPixelGrid();
+            initSliders();
+            initCanvas();
+            initMatrixAnimation();
+            
+            // Actualizar cálculos iniciales
+            updateAverage();
+            updateKPower();
+            
+            // Configurar eventos
+            document.getElementById('randomize-pixels').addEventListener('click', randomizePixels);
+            document.getElementById('reset-pixels').addEventListener('click', resetPixels);
+            document.getElementById('apply-blur').addEventListener('click', applyBlur);
+            document.getElementById('show-calculation').addEventListener('click', showCalculation);
+        });
+        
+        // Inicializar la cuadrícula de píxeles
+        function initPixelGrid() {
+            const grid = document.getElementById('pixel-grid');
+            grid.innerHTML = '';
+            
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'matrix-cell';
+                cell.textContent = pixelValues[i];
+                cell.dataset.index = i;
+                cell.addEventListener('click', function() {
+                    const newValue = prompt('Ingresa nuevo valor para el píxel (0-255):', pixelValues[i]);
+                    if (newValue !== null && !isNaN(newValue)) {
+                        const val = parseInt(newValue);
+                        if (val >= 0 && val <= 255) {
+                            pixelValues[i] = val;
+                            cell.textContent = val;
+                            updateAverage();
+                        }
+                    }
+                });
+                grid.appendChild(cell);
+            }
+        }
+        
+        // Actualizar el promedio
+        function updateAverage() {
+            const sum = pixelValues.reduce((a, b) => a + b, 0);
+            const average = sum / 9;
+            document.getElementById('average-result').textContent = average.toFixed(2);
+            
+            // Resaltar la celda central en la visualización
+            const cells = document.querySelectorAll('#pixel-grid .matrix-cell');
+            cells.forEach(cell => {
+                cell.style.backgroundColor = '';
+            });
+            cells[4].style.backgroundColor = '#d4edda';
+        }
+        
+        // Aleatorizar píxeles
+        function randomizePixels() {
+            for (let i = 0; i < 9; i++) {
+                pixelValues[i] = Math.floor(Math.random() * 256);
+            }
+            initPixelGrid();
+            updateAverage();
+        }
+        
+        // Reiniciar píxeles a valores iniciales
+        function resetPixels() {
+            pixelValues = [2, 4, 5, 6, 1, 2, 4, 5, 1];
+            initPixelGrid();
+            updateAverage();
+        }
+        
+        // Inicializar controles deslizantes
+        function initSliders() {
+            const exponentSlider = document.getElementById('exponent-slider');
+            const exponentValue = document.getElementById('exponent-value');
+            const blurSlider = document.getElementById('blur-slider');
+            const blurValue = document.getElementById('blur-value');
+            
+            exponentSlider.value = exponent;
+            exponentValue.textContent = exponent;
+            
+            blurSlider.value = blurIntensity;
+            blurValue.textContent = blurIntensity;
+            
+            exponentSlider.addEventListener('input', function() {
+                exponent = parseInt(this.value);
+                exponentValue.textContent = exponent;
+                updateKPower();
+            });
+            
+            blurSlider.addEventListener('input', function() {
+                blurIntensity = parseInt(this.value);
+                blurValue.textContent = blurIntensity;
+            });
+        }
+        
+        // Actualizar cálculo de K^n
+        function updateKPower() {
+            const value = (1/3) ** exponent;
+            const resultElement = document.getElementById('k-power-result');
+            resultElement.innerHTML = 
+                `$$K^{${exponent}} = ${value.toFixed(6)} \\begin{bmatrix} 1 & 1 & 1 \\\\ 1 & 1 & 1 \\\\ 1 & 1 & 1 \\end{bmatrix}$$`;
+            
+            // Actualizar MathJax
+            if (window.MathJax) {
+                MathJax.typeset();
+            }
+        }
+        
+        // Mostrar cálculo paso a paso
+        function showCalculation() {
+            alert(`Cálculo de K^${exponent} mediante diagonalización:\n\n` +
+                  `1. K = P D P⁻¹\n` +
+                  `2. D = diag(1/3, 0, 0)\n` +
+                  `3. D^${exponent} = diag((1/3)^${exponent}, 0, 0) = diag(${(1/3)**exponent}, 0, 0)\n` +
+                  `4. K^${exponent} = P D^${exponent} P⁻¹\n` +
+                  `5. Resultado: todos los elementos = ${(1/3)**exponent}`);
+        }
+        
+        // Inicializar canvas para imagen
+        function initCanvas() {
+            const originalCanvas = document.getElementById('original-canvas');
+            const blurredCanvas = document.getElementById('blurred-canvas');
+            
+            if (originalCanvas.getContext && blurredCanvas.getContext) {
+                const originalCtx = originalCanvas.getContext('2d');
+                const blurredCtx = blurredCanvas.getContext('2d');
+                
+                // Crear una imagen de ejemplo (patrón de rayas)
+                drawPattern(originalCtx, originalCanvas.width, originalCanvas.height);
+                
+                // Aplicar blur inicial
+                applyBlurEffect(originalCtx, blurredCtx, blurredCanvas.width, blurredCanvas.height, blurIntensity);
+            }
+        }
+        
+        // Dibujar patrón de ejemplo
+        function drawPattern(ctx, width, height) {
+            // Fondo blanco
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Dibujar algunas formas
+            ctx.fillStyle = '#3498db';
+            ctx.fillRect(50, 30, 60, 60);
+            
+            ctx.fillStyle = '#e74c3c';
+            ctx.beginPath();
+            ctx.arc(200, 80, 40, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#27ae60';
+            ctx.beginPath();
+            ctx.moveTo(100, 150);
+            ctx.lineTo(150, 100);
+            ctx.lineTo(200, 150);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Texto
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('Ejemplo', 120, 180);
+        }
+        
+        // Aplicar efecto de blur
+        function applyBlur() {
+            const originalCanvas = document.getElementById('original-canvas');
+            const blurredCanvas = document.getElementById('blurred-canvas');
+            
+            if (originalCanvas.getContext && blurredCanvas.getContext) {
+                const originalCtx = originalCanvas.getContext('2d');
+                const blurredCtx = blurredCanvas.getContext('2d');
+                
+                applyBlurEffect(originalCtx, blurredCtx, blurredCanvas.width, blurredCanvas.height, blurIntensity);
+                
+                // Mostrar mensaje
+                alert(`Filtro de promedio aplicado ${blurIntensity} vez(es).\n\n` +
+                      `Cada aplicación reemplaza cada píxel por el promedio de sus vecinos, ` +
+                      `produciendo un efecto de desenfoque más intenso.`);
+            }
+        }
+        
+        // Algoritmo simple de blur (promedio de vecinos)
+        function applyBlurEffect(sourceCtx, destCtx, width, height, intensity) {
+            // Copiar la imagen original
+            const imageData = sourceCtx.getImageData(0, 0, width, height);
+            const data = imageData.data;
+            
+            // Aplicar blur varias veces según la intensidad
+            for (let n = 0; n < intensity; n++) {
+                const tempData = new Uint8ClampedArray(data);
+                
+                for (let y = 1; y < height - 1; y++) {
+                    for (let x = 1; x < width - 1; x++) {
+                        const idx = (y * width + x) * 4;
+                        
+                        // Promedio de los 9 píxeles vecinos (kernel 3x3)
+                        let r = 0, g = 0, b = 0;
+                        
+                        for (let ky = -1; ky <= 1; ky++) {
+                            for (let kx = -1; kx <= 1; kx++) {
+                                const kidx = ((y + ky) * width + (x + kx)) * 4;
+                                r += tempData[kidx];
+                                g += tempData[kidx + 1];
+                                b += tempData[kidx + 2];
+                            }
+                        }
+                        
+                        data[idx] = r / 9;
+                        data[idx + 1] = g / 9;
+                        data[idx + 2] = b / 9;
+                    }
+                }
+            }
+            
+            destCtx.putImageData(imageData, 0, 0);
+        }
+        
+        // Animación de matriz en el encabezado
+        function initMatrixAnimation() {
+            // Esta función requiere p5.js que ya está incluido
+            // Creamos una animación simple si p5 está disponible
+            if (typeof p5 !== 'undefined') {
+                new p5(function(p) {
+                    p.setup = function() {
+                        const canvas = p.createCanvas(800, 200);
+                        canvas.parent('matrix-animation');
+                        canvas.style('position', 'absolute');
+                        canvas.style('top', '0');
+                        canvas.style('left', '0');
+                        canvas.style('width', '100%');
+                        canvas.style('height', '100%');
+                        p.noStroke();
+                    };
+                    
+                    p.draw = function() {
+                        p.clear();
+                        
+                        // Dibujar puntos que representan una matriz
+                        const cols = 15;
+                        const rows = 5;
+                        const spacingX = p.width / cols;
+                        const spacingY = p.height / rows;
+                        
+                        for (let i = 0; i < cols; i++) {
+                            for (let j = 0; j < rows; j++) {
+                                const x = i * spacingX + spacingX / 2;
+                                const y = j * spacingY + spacingY / 2;
+                                
+                                // Tamaño pulsante
+                                const pulse = p.sin(p.frameCount * 0.05 + i * 0.5 + j * 0.3) * 3;
+                                const size = 5 + pulse;
+                                
+                                p.fill(255, 255, 255, 150);
+                                p.ellipse(x, y, size, size);
+                                
+                                // Número dentro (opcional)
+                                p.fill(255, 255, 255, 200);
+                                p.textSize(10);
+                                p.textAlign(p.CENTER, p.CENTER);
+                                p.text((i + j) % 10, x, y);
+                            }
+                        }
+                        
+                        // Dibujar líneas de conexión
+                        p.stroke(255, 255, 255, 50);
+                        p.strokeWeight(1);
+                        
+                        for (let i = 0; i < cols - 1; i++) {
+                            for (let j = 0; j < rows; j++) {
+                                const x1 = i * spacingX + spacingX / 2;
+                                const y1 = j * spacingY + spacingY / 2;
+                                const x2 = (i + 1) * spacingX + spacingX / 2;
+                                const y2 = j * spacingY + spacingY / 2;
+                                
+                                p.line(x1, y1, x2, y2);
+                            }
+                        }
+                        
+                        for (let i = 0; i < cols; i++) {
+                            for (let j = 0; j < rows - 1; j++) {
+                                const x1 = i * spacingX + spacingX / 2;
+                                const y1 = j * spacingY + spacingY / 2;
+                                const x2 = i * spacingX + spacingX / 2;
+                                const y2 = (j + 1) * spacingY + spacingY / 2;
+                                
+                                p.line(x1, y1, x2, y2);
+                            }
+                        }
+                    };
+                }, 'matrix-animation');
+            }
+        }
+    </script>
+</body>
+</html>
